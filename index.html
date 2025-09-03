@@ -1,72 +1,112 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mini Clothing Shop — Demo</title>
+  <title>Simple Clothing Shop</title>
   <style>
-    :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --accent:#111827;
-      --accent-2:#0ea5a4;
-      --glass: rgba(255,255,255,0.6);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    :root{--accent:#ff6b6b;--muted:#666}
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.4;margin:0;color:#111}
+    header{display:flex;gap:1rem;align-items:center;justify-content:space-between;padding:1rem; border-bottom:1px solid #eee}
+    .brand{display:flex;gap:.75rem;align-items:center}
+    .brand h1{font-size:1.125rem;margin:0}
+    .search{flex:1;max-width:520px;margin:0 1rem}
+    .search input{width:100%;padding:.5rem .75rem;border:1px solid #ddd;border-radius:8px}
+    main{padding:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+    .card{border:1px solid #eee;padding:0.75rem;border-radius:10px;background:#fff;display:flex;flex-direction:column;gap:.5rem}
+    .thumb{height:180px;background:#f6f6f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--muted)}
+    .price{font-weight:700}
+    .meta{display:flex;justify-content:space-between;align-items:center}
+    button{background:var(--accent);color:#fff;border:0;padding:.5rem .75rem;border-radius:8px;cursor:pointer}
+    .cart{position:relative}
+    .cart .count{position:absolute;right:-8px;top:-8px;background:#222;color:#fff;border-radius:999px;padding:2px 6px;font-size:.75rem}
+    footer{padding:1rem;text-align:center;color:var(--muted);font-size:.9rem}
+    @media (max-width:420px){header{flex-direction:column;align-items:stretch}.search{order:3;margin:0}
     }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--accent);}
-    .wrap{max-width:1100px;margin:28px auto;padding:18px;}
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="var(--accent)"/><path d="M7 9h10v2H7z" fill="white"/></svg>
+      <h1>ClothBox</h1>
+    </div>
+    <div class="search">
+      <input id="search" placeholder="Search shirts, jeans, jackets..." />
+    </div>
+    <div class="cart">
+      <button id="view-cart">Cart 🛒</button>
+      <div class="count" id="cart-count">0</div>
+    </div>
+  </header>  <main>
+    <section class="grid" id="products">
+      <!-- Product cards will render here -->
+    </section><template id="product-template">
+  <article class="card">
+    <div class="thumb">IMG</div>
+    <div>
+      <div class="title"></div>
+      <div class="meta"><div class="price"></div><div class="size">S • M • L</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto">
+      <small class="muted">Free returns</small>
+      <button class="add">Add</button>
+    </div>
+  </article>
+</template>
+
+  </main>  <footer>
+    A tiny demo shop — replace images and product data to use in your projects.
+  </footer>  <script>
+    // Sample product data
+    const products = [
+      {id:1,title:'Classic White Tee',price:299,img:''},
+      {id:2,title:'Slim Fit Jeans',price:1499,img:''},
+      {id:3,title:'Vintage Hoodie',price:1999,img:''},
+      {id:4,title:'Lightweight Jacket',price:2499,img:''},
+      {id:5,title:'Cotton Shorts',price:799,img:''},
+      {id:6,title:'Striped Shirt',price:899,img:''}
+    ];
+
+    const productsEl = document.getElementById('products');
+    const tpl = document.getElementById('product-template');
+    const cartCountEl = document.getElementById('cart-count');
+    const searchInput = document.getElementById('search');
+
+    let cart = [];
+
+    function render(list){
+      productsEl.innerHTML = '';
+      list.forEach(p => {
+        const node = tpl.content.cloneNode(true);
+        node.querySelector('.title').textContent = p.title;
+        node.querySelector('.price').textContent = '₹' + p.price;
+        node.querySelector('.thumb').textContent = p.title.split(' ')[0];
+        const btn = node.querySelector('.add');
+        btn.addEventListener('click', ()=>{ addToCart(p); });
+        productsEl.appendChild(node);
+      });
     }
-    .brand{
-      display:flex;align-items:center;gap:12px;
+
+    function addToCart(product){
+      cart.push(product);
+      cartCountEl.textContent = cart.length;
+      // simple visual feedback
+      const original = document.querySelector('.cart button');
+      original.textContent = 'Added ✓';
+      setTimeout(()=> original.textContent = 'Cart 🛒',800);
     }
-    .logo{
-      width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent-2),#06b6d4);
-      display:grid;place-items:center;color:white;font-weight:700;font-size:18px;
-    }
-    h1{font-size:20px;margin:0;}
-    .controls{display:flex;gap:10px;align-items:center;}
-    .search{
-      padding:8px 12px;border-radius:10px;border:1px solid #e6e7eb;background:white;min-width:180px;
-    }
-    .sort{
-      padding:8px;border-radius:10px;border:1px solid #e6e7eb;background:white;
-    }
-    main{display:grid;grid-template-columns:1fr 320px;gap:20px;}
-    /* product grid */
-    .products{background:transparent;padding:6px;}
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-      gap:14px;
-    }
-    .card{
-      background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06);
-      display:flex;flex-direction:column;gap:8px;transition:transform .14s ease, box-shadow .14s ease;
-    }
-    .card:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(16,24,40,0.08);}
-    .thumb{height:160px;border-radius:8px;background-size:cover;background-position:center;}
-    .product-title{font-weight:600;font-size:15px;margin:0;}
-    .muted{color:var(--muted);font-size:13px;}
-    .price{font-weight:700;}
-    .card-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;}
-    button.btn{
-      padding:8px 10px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent-2),#06b6d4);color:white;
-      cursor:pointer;font-weight:600;
-    }
-    button.ghost{background:transparent;border:1px solid #e6e7eb;color:var(--accent);padding:8px 10px;border-radius:10px;cursor:pointer;}
-    /* cart */
-    .cart{
-      background:linear-gradient(180deg, rgba(255,255,255,0.9), var(--glass));
-      padding:12px;border-radius:12px;height:fit-content;position:sticky;top:20px;
-      box-shadow:0 6px 18px rgba(16,24,40,0.04);
-    }
-    .cart h2{margin:0 0 10px 0;font-size:16px;}
-    .cart-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;padding-right:6px;}
-    .cart-item{display:flex;gap:8px;align-items:center;border-radius:8px;padding:8px;background:#fff;border:1px solid #f1f3f5;}
-    .cart-thumb{width:48px;height:48px;border-radius:6px;background-size:cover;background-position:center;}
-    .cart-meta{flex:1;}
-    .qty{display:flex;gap:6px;align-items:center;}
-    .total{display:flex;justify-content:space-between;font-weight:800;padding-top:10px;border-top:1px dashed #ebeef2;margin-top:
+
+    // Search filter
+    searchInput.addEventListener('input',(e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      render(products.filter(p=>p.title.toLowerCase().includes(q)));
+    });
+
+    // initial render
+    render(products);
+  </script></body>
+</html>
